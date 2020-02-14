@@ -1,4 +1,4 @@
-# HX711 for Raspbery Py
+# Scales HX711 for Raspbery Py with MQTT
 ----
 Quick code credited to [underdoeg](https://github.com/underdoeg/)'s [Gist HX711.py](https://gist.github.com/underdoeg/98a38b54f889fce2b237).
 I've only made a few modifications on the way the captured bits are processed and to support Two's Complement, which it didn't.
@@ -12,7 +12,10 @@ Installation
 1. Clone or download and unpack this repository
 2. In the repository directory, run
 ```
-python setup.py install
+python3 setup.py install
+sudo apt-get install mosquitto-clients
+sudo pip3 install paho-mqtt
+
 ```
 
 Using a 2-channel HX711 module
