@@ -1,6 +1,4 @@
-#! /usr/bin/python3
-
-import sys
+﻿import sys
 sys.path.append("./lib")
 
 import i2c_lib
@@ -94,7 +92,7 @@ class lcd:
       elif state in ("off","Off","OFF"):
          self.lcd_device.write_cmd(LCD_NOBACKLIGHT)
       else:
-         print ("Unknown State!")
+         print("Unknown State!")
 
    # put string function
    def lcd_display_string(self, string, line):
