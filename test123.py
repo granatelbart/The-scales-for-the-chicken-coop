@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import time
 
-import gpiozero
 import lcddriver
 import RPi.GPIO as GPIO
 import sys
@@ -27,11 +26,11 @@ class HP4067Mux:
 
 mymux = HP4067Mux(22, 27, 23, 24)
 mymux.channel (0)
-GPIO.setmode(GPIO.BCM) 
 
-GPIO.setup(26, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-##GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(20, GPIO.IN, pull_up_down=GPIO.PUD_UP) 
+GPIO.setmode(GPIO.BCM) 
+GPIO.setup(25, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(8, GPIO.IN, pull_up_down=GPIO.PUD_UP) 
 
 EMULATE_HX711 = False
 
@@ -39,19 +38,6 @@ if EMULATE_HX711:
     from emulated_hx711 import HX711
 else:
     from hx711 import HX711
-
-name = "kein name"
-def on_message(client, userdata, message):
-    global name
-    name = str(message.payload.decode("utf-8"))
-topics = ["name"]
-client = mqtt.Client()
-client.on_message=on_message
-client.connect("127.0.0.1", 1883, 180)
-client.loop_start()
-for name in topics:
-        client.subscribe("name/reader")
-        client.loop_start()
 
 client = mqtt.Client()
 client.connect("127.0.0.1", 1883, 60)
@@ -61,7 +47,7 @@ def main():
     try:
         
         #lcd = lcddriver.lcd()
-        weight_sensor = HX711(HP4067Mux, HP4067Mux)
+        weight_sensor = HX711(22, 23)
         weight_sensor.set_reading_format("MSB", "MSB")
         weight_sensor.set_reference_unit(339)
         weight_sensor.reset()
@@ -69,21 +55,21 @@ def main():
         print("Tare done! Add weight now...")
         while True:
 
-            #input_state = GPIO.input(26)
-            #if input_state == False:
-            #    lcd.lcd_display_string("Tara ausgefuehrt", 4)
-            #    weight_sensor.tare()
-            #    time.sleep(0.2)
+        #    input_state = GPIO.input(25)
+        #    if input_state == False:
+        #        lcd.lcd_display_string("Tara ausgefuehrt", 4)
+        #        weight_sensor.tare()
+        #        time.sleep(0.2)
               
-            #input_state = GPIO.input(20)
-            #if input_state == False:
-            #   print("gedrueckt")
-            #   lcd.lcd_display_string("Reboot ausgeloest", 4)
-            #   time.sleep(3.3)
-            #   lcd.lcd_clear()
-            #   os.system("reboot")
-            #   sys.exit()
-            #time.sleep(0.3)
+        #    input_state = GPIO.input(8)
+        #    if input_state == False:
+        #       print("gedrueckt")
+        #       lcd.lcd_display_string("Reboot ausgeloest", 4)
+        #       time.sleep(3.3)
+        #       lcd.lcd_clear()
+        #       os.system("reboot")
+        #       sys.exit()
+        #    time.sleep(0.3)
             
             weight = max(0, int(weight_sensor.get_weight(5)))
             client.publish("huhn/waage", weight)
@@ -91,10 +77,9 @@ def main():
             weight_sensor.power_down()
             weight_sensor.power_up()
             time.sleep(0.1)
-            #lcd.lcd_clear()
-            #lcd.lcd_display_string(str(weight), 1)
-            ##lcd.lcd_display_string(time.strftime("%d.%m.%Y %H:%M:%S"), 2)
-            #lcd.lcd_display_string(str(name), 3)
+         #   lcd.lcd_clear()
+         #   lcd.lcd_display_string(str(weight), 1)
+         #   lcd.lcd_display_string(time.strftime("%d.%m.%Y %H:%M:%S"), 2)
 
     except KeyboardInterrupt:
         pass  # User can end this with Ctrl+C.
