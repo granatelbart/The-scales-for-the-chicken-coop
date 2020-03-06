@@ -48,8 +48,7 @@ class HP4067Mux:
 
 
 mymux = HP4067Mux(22, 27, 23, 24)
-mymux.channel (0)
-i
+
 
 ####################################################################
 
@@ -78,7 +77,7 @@ else:
 
 def main():
     try:
-        
+        mymux.channel(15)
         #lcd = lcddriver.lcd()
         weight_sensor = HX711(17, 18)
         weight_sensor.set_reading_format("MSB", "MSB")
@@ -88,22 +87,21 @@ def main():
         print("Tare done! Add weight now...")
         while True:
 
-            #input_state = GPIO.input(26)
-            #if input_state == False:
-            #    lcd.lcd_display_string("Tara ausgefuehrt", 4)
-            #    weight_sensor.tare()
-            #    time.sleep(0.2)
+            input_state = GPIO.input(26)
+            if input_state == False:
+                lcd.lcd_display_string("Tara ausgefuehrt", 4)
+                weight_sensor.tare()
+                time.sleep(0.2)
               
-            #input_state = GPIO.input(20)
-            #if input_state == False:
-            #   print("gedrueckt")
-            #   lcd.lcd_display_string("Reboot ausgeloest", 4)
-            #   time.sleep(3.3)
-            #   lcd.lcd_clear()
-            #   os.system("reboot")
-            #   sys.exit()
-            #time.sleep(0.3)
-            
+            input_state = GPIO.input(20)
+            if input_state == False:
+               print("gedrueckt")
+               lcd.lcd_display_string("Reboot ausgeloest", 4)
+               time.sleep(3.3)
+               lcd.lcd_clear()
+               os.system("reboot")
+               sys.exit()
+            time.sleep(0.3)
             weight = max(0, int(weight_sensor.get_weight(5)))
             client.publish("huhn/waage1", weight)
             print(weight)
