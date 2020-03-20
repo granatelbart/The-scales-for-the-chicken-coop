@@ -4,7 +4,7 @@ import time
 import gpiozero, lcddriver, RPi.GPIO as GPIO, sys, paho.mqtt.client as mqtt, os, sched, time, threading, traceback
 from gpiozero import DigitalOutputDevice
 from threading import Thread
-
+from threading import Event
 ################################################################
 
 name = "kein name"
@@ -45,7 +45,7 @@ class HP4067Mux:
 
 mymux = HP4067Mux(22, 23, 24, 27)
 #mymux.channel(7)
-mymux.channel(0)
+#mymux.channel(0)
 
 ####################################################################
 
@@ -85,20 +85,29 @@ def read_sensor():
             weight_sensor.tare()
             print("Tare done! Add weight now...")
 
-class MyThread(Thread):
-    def init(self, event):
-        Thread.init(self)
-        self.stopped = event
+#class MyThread(Thread):
+ #   def __init__(self, threadID):
+ #       threading.Thread.__init__(self, name=MyThread)
+ #       self.threadID = threadID
+#
+#    def init(self, event):
+#        Thread.init(self)
+#        self.stopped = event
+#
+#    def run(self):
+#        while not self.stopped.wait(0.5):
+#            print("my thread")
+#            # call a function
+#            read_sensor()
+def read_sensor_timer():
+    threading.Timer(0.5, read_sensor_timer).start() # called every 500ms
+    print("read_sensor()")
+    read_sensor()
 
-    def run(self):
-        while not self.stopped.wait(0.5):
-            print("my thread")
-            # call a function
-            read_sensor()
 def main():
-    stopFlag = Event()
-    thread = MyThread(stopFlag)
-    thread.start()   
+    read_sensor_timer()
+    weight_sensor = HX711(17, 18)
+
     try:
         while True:
 
@@ -135,7 +144,7 @@ def main():
         if not EMULATE_HX711:
             GPIO.cleanup()
         print("Bye!")
-        stopFlag.set()
+#        stopFlag.set()
 
 if __name__ == "__main__":
     main()
