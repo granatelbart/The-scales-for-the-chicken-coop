@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 import time
 
-import gpiozero
-import lcddriver
-import RPi.GPIO as GPIO
-import sys
-import paho.mqtt.client as mqtt
-import os
+import gpiozero, lcddriver, RPi.GPIO as GPIO, sys, paho.mqtt.client as mqtt, os, sched, time, threading, traceback
 from gpiozero import DigitalOutputDevice
+from threading import Thread
 
 ################################################################
 
@@ -47,8 +43,9 @@ class HP4067Mux:
             pin.value = bool(1 << i & value)
 
 
-mymux = HP4067Mux(22, 27, 23, 24)
-
+mymux = HP4067Mux(22, 23, 24, 27)
+#mymux.channel(7)
+mymux.channel(0)
 
 ####################################################################
 
@@ -74,17 +71,35 @@ if EMULATE_HX711:
 else:
     from hx711 import HX711
 
+def read_sensor():
+    unit = [339, 345, 400, 444, 323, 423, 523, 333, 123, 325, 326, 329, 331, 333, 343, 352]
 
-def main():
-    try:
-        mymux.channel(15)
-        #lcd = lcddriver.lcd()
+    for i in range(0, 15):
+        mymux.channel(i)
+        lcd = lcddriver.lcd()
         weight_sensor = HX711(17, 18)
         weight_sensor.set_reading_format("MSB", "MSB")
-        weight_sensor.set_reference_unit(339)
-        weight_sensor.reset()
-        weight_sensor.tare()
-        print("Tare done! Add weight now...")
+        weight_sensor.set_reference_unit(unit[i])
+        if i == 0:
+            weight_sensor.reset()
+            weight_sensor.tare()
+            print("Tare done! Add weight now...")
+
+class MyThread(Thread):
+    def init(self, event):
+        Thread.init(self)
+        self.stopped = event
+
+    def run(self):
+        while not self.stopped.wait(0.5):
+            print("my thread")
+            # call a function
+            read_sensor()
+def main():
+    stopFlag = Event()
+    thread = MyThread(stopFlag)
+    thread.start()   
+    try:
         while True:
 
             input_state = GPIO.input(26)
@@ -108,10 +123,10 @@ def main():
             weight_sensor.power_down()
             weight_sensor.power_up()
             time.sleep(0.1)
-            #lcd.lcd_clear()
-            #lcd.lcd_display_string(str(weight), 1)
-            ##lcd.lcd_display_string(time.strftime("%d.%m.%Y %H:%M:%S"), 2)
-            #lcd.lcd_display_string(str(name), 3)
+            lcd.lcd_clear()
+            lcd.lcd_display_string(str(weight), 1)
+            #lcd.lcd_display_string(time.strftime("%d.%m.%Y %H:%M:%S"), 2)
+            lcd.lcd_display_string(str(name), 3)
 
     except KeyboardInterrupt:
         pass  # User can end this with Ctrl+C.
@@ -120,7 +135,7 @@ def main():
         if not EMULATE_HX711:
             GPIO.cleanup()
         print("Bye!")
-
+        stopFlag.set()
 
 if __name__ == "__main__":
     main()
