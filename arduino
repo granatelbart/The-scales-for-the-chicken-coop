@@ -37,7 +37,7 @@ void reconnect() {
       // Once connected, publish an announcement...
       float i = LoadCell.getData(); // get output value
       Serial.print(i);
-      client.publish("outTopic", "%\i");
+      client.publish("outTopic", "Hallo");
       // ... and resubscribe
       client.subscribe("inTopic");
     } else {
@@ -76,11 +76,13 @@ void loop()
     reconnect();
   }
   client.loop();
+  
   LoadCell.update(); // retrieves data from the load cell
   float i = LoadCell.getData(); // get output value
   lcd.setCursor(0, 0); // set cursor to first row
   lcd.print("Weight[g]:"); // print out to LCD
   lcd.setCursor(0, 1); // set cursor to secon row
   lcd.print(i); // print out the retrieved value to the second row
+  client.publish("outTopic",  String(i).c_str(), true);
   
 }
